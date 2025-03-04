@@ -1,13 +1,12 @@
-# Ross P. Coron // 2022-02-22 // CS50W 'Wiki'
+
 
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from . import util  # CS50W provided functions
-import markdown2    # Text-to-HTML convertor, see: https://github.com/trentm/python-markdown2
-import random   # For random page
-
+from . import util  
+import markdown2    
+import random  
 
 def index(request):
     """Lists all curent entries"""
@@ -20,7 +19,7 @@ def index(request):
 def page(request, entry):
     """Renders markdown file in HTML page"""
 
-    # Converts markdown file to string
+    
     content = util.get_entry(entry)
 
     if content == None:
@@ -29,9 +28,7 @@ def page(request, entry):
         })
 
     markdown_text = markdown2.markdown(content)
-    # markdown_text = markdown2.markdown_path("./entries/" + entry + ".md") - alt. using filepath
-
-    # Renders page, passing in string and page name
+   
     return render(request, "encyclopedia/page.html", {
         "entry": entry,
         "content": markdown_text
@@ -44,15 +41,15 @@ def new(request):
     if request.method == "GET":
         return render(request, "encyclopedia/new.html")
 
-    # If route accessed via POST (i.e. after submitting form)
+    
     elif request.method == "POST":
 
-        # Stores entry's name and content
+        
         form = request.POST
         title = form['title']
         content = form['content']
 
-        # Checks file does not already exist and renders result (success / fail)
+        
         entries = util.list_entries()
 
         print(title)
@@ -96,7 +93,7 @@ def edit(request, entry):
 def random_page(request):
     """Display random entry"""
 
-    # Get entries, select random, redirect to page passing in name
+    
     entries = util.list_entries()
     page = random.choice(entries)
 
@@ -107,40 +104,40 @@ def search(request):
     """Search for markdown file"""
 
     if request.method == "POST":
-        # Get search term from input
+        
         term = request.POST
         term = term['q']
 
         entries = util.list_entries()
         page = None
 
-        # Checks for exact match
+       
         for item in entries:
             if term.lower() == item.lower():
                 page = item
                 print(f"Exact Match Found! -", page)
 
-        # If exact match found, redirect to page
+        
         if page != None:
             return HttpResponseRedirect(reverse("wiki:page", kwargs={'entry': page}))
 
-        # Checks for substring match and appends list
+        
         list = []
         for item in entries:
             if term.lower() in item.lower():
                 list.append(item)
 
-        # If no results, render page (Django will catch via {% empty %})
+       
         if not list:
             return render(request, "encyclopedia/results.html")
 
-        # If result(s) found, render as list
+        
         else:
-            # Pass into results.html
+           
             return render(request, "encyclopedia/results.html", {
                 "results": list
             })
 
-    # I.e. if via GET. Should not be possible but silences Django Error
+   
     else:
         return HttpResponse("Error")
